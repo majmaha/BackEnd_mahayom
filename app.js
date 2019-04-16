@@ -3,10 +3,26 @@ const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const mysql = require('mysql')
+var login = require('./routes/loginroutes');
+var register = require('./routes/loginroutes');
+var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt');
 
 
 //logging requests and stuff
 app.use(morgan('short'))
+
+//parsing incoming requests from json objects
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+//allow origin, allow cross domain connections 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+var router = express.Router();
 
 app.get("/events/:id", (req,res) => {
     console.log("fetching even with id:" + req.params.id)
@@ -44,7 +60,7 @@ app.get("/events/:id", (req,res) => {
 //response for root route
 app.get("/", (req, res) => {
     console.log("Responding to root route")
-    res.send("Hello from r0000000t")
+    res.send("MaHayom API")
 })
 
 //return all events
@@ -54,6 +70,11 @@ app.get("/events", (req,res) => {
     res.json([event1,event2])
     //res.send("nodemon auto updates when i save this files")
 })
+
+//route to handle user registration
+router.post('/register',login.register);
+router.post('/login',login.login)
+app.use('/api', router);
 
 //run server on port 3003, use localhost:3003 to open the server.
 //node app.js , starts the server from console
